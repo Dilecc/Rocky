@@ -1,0 +1,21 @@
+﻿@using Rocky_Utilitu
+
+@if (TempData[WC.Success] != null)
+{
+    <link rel="stylesheet" href="~/css/toastr.min.css" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
+    <script>
+        toastr.success('@TempData[WC.Success]', { timeOut: 5000 });
+    </script>
+}
+
+@if (TempData[WC.Error] != null)
+{
+    <link rel="stylesheet" href="~/css/toastr.min.css" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
+    <script>
+        toastr.success('@TempData[WC.Error]', { timeOut: 5000 });
+    </script>
+}

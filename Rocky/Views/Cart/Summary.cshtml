@@ -1,0 +1,158 @@
+﻿@using Rocky_Utilitu
+@model Rocky.Models.ViewModels.ProductUserVM
+
+<form method="post">
+    <br />
+    <div class="backgroundWhiteBorder">
+        <div class="container">
+            <div class="card">
+                <div class="card-header bg-dark text-light">
+                    <div class="float-start">
+                        <i class="fa fa-shopping-cart"></i> &nbsp;
+                        Order Summary
+                    </div>
+                    <div class="float-end">
+                        <a class="btn btn-outline-info btn-sm">Back to Cart</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="container rounded p-2">
+                        <div class="row">
+                            <div class="col-12 col-lg-7 pb-4">
+                                <div class="row">
+                                    <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="text-info">User Details:</span>
+                                    </h4>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Name</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input asp-for="ApplicationUser.FullName" required type="text" class="form-control" />
+                                        <span asp-validation-for="ApplicationUser.FullName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Phone</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input asp-for="ApplicationUser.PhoneNumber" required type="text" class="form-control" />
+                                        <span asp-validation-for="ApplicationUser.PhoneNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="row my-1">
+                                    <div class="col-3">
+                                        <label>Email</label>
+                                    </div>
+                                    <div class="col-9">
+                                        <input asp-for="ApplicationUser.Email" required type="text" class="form-control" />
+                                        <span asp-validation-for="ApplicationUser.Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                @if (User.IsInRole(WC.AdminRole))
+                                {
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label>Street Address</label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="ApplicationUser.StreetAddress" type="text" class="form-control" />
+                                            <span asp-validation-for="ApplicationUser.StreetAddress" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label>City</label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="ApplicationUser.City" type="text" class="form-control" />
+                                            <span asp-validation-for="ApplicationUser.City" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label>State</label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="ApplicationUser.State" type="text" class="form-control" />
+                                            <span asp-validation-for="ApplicationUser.State" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label>Postal Code</label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="ApplicationUser.PostalCode" type="text" class="form-control" />
+                                            <span asp-validation-for="ApplicationUser.PostalCode" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-12 col-lg-5 row">
+                                <div class="col-12">
+                                    <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="text-info">Summary:</span>
+                                    </h4>
+                                    <ul class="list-group mb-3">
+                                        @{ var totalPrice = 0.0; }
+                                        @for (int i = 0; i < Model.ProductList.Count(); i++)
+                                        {
+                                            <input type="hidden" asp-for="@Model.ProductList[i].Id" />
+                                            <input type="hidden" asp-for="@Model.ProductList[i].Name" />
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <div>
+                                                    <h6 class="my-0">@Model.ProductList[i].Name</h6>
+                                                    @if (User.IsInRole(WC.AdminRole))
+                                                    {
+                                                        <small class="text-muted">SqFt : @Model.ProductList[i].TempSqFt </small>
+
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="text-muted">Price per :  @($"{Model.ProductList[i].Price:c}") </small>
+                                                    }
+                                                </div>
+                                                @if (User.IsInRole(WC.AdminRole))
+                                                {
+                                                    <span class="text-muted">@($"{Model.ProductList[i].Price * Model.ProductList[i].TempSqFt:c}") </span>
+                                                }
+                                            </li>
+                                            totalPrice += (Model.ProductList[i].Price * Model.ProductList[i].TempSqFt);
+                                        }
+                                        @if (User.IsInRole(WC.AdminRole))
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between">Total price : @($"{totalPrice:c}")</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-12 col-md-5 offset-md-7">
+                            @if (User.IsInRole(WC.AdminRole))
+                            {
+                                <button type="submit" id="submitButton" class="btn btn-success form-control">Submit order</button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-primary form-control">Submit Inquiry</button>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}
