@@ -181,6 +181,21 @@ namespace Rocky.Controllers
                 };
                 _orderHederlRepos.Add(orderHeader);
                 _orderHederlRepos.Save();
+                
+                foreach (var prod in ProductUserVm.ProductList)
+                {
+                    OrderDetail orderDetail = new OrderDetail()
+                    { 
+                        OrderHeaderId = orderHeader.Id,
+                        PricePerSqFt = prod.Price,
+                        Sqft = prod.TempSqFt,
+                        ProductId = prod.Id
+                    };
+                    _orserDetailRepos.Add(orderDetail);
+                }
+                _orderHederlRepos.Save();
+                return RedirectToAction(nameof(InquaryConfirmation), new {id = orderHeader.Id});
+
             }
             else // код для создания запроса
             {
