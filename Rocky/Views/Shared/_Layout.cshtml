@@ -60,7 +60,7 @@
                         <ul>
                             @if (HttpContextAccessor.HttpContext?.Session.Get<List<ShoppingCart>>(WC.SessionCart) != null)
                             {
-                                    <a asp-action="Index" asp-controller="Cart" class="dropdown-item">
+                                    <a asp-action="Index" asp-controller="Cart" class="nav-link ">
                                     @{
                                         var count = HttpContextAccessor.HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart).Count;
                                     }
@@ -70,7 +70,7 @@
                             }
                             else
                             {
-                                    <a href="#" class="dropdown-item">
+                                    <a href="#" class="nav-link ">
                                     <sp class="fa fa-shopping-cart"> &nbsp; (0)</sp>
                                 </a>
                             }

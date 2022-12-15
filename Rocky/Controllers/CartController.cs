@@ -7,18 +7,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
-using Newtonsoft.Json;
-using Rocky.Data;
+using Microsoft.Extensions.Configuration;
 using Rocky.Models;
 using Rocky.Models.ViewModels;
 using Rocky_DataAccess.Repository.IRepository;
 using Rocky_Models;
 using Rocky_Utilitu;
-using Umbraco.Core.Deploy;
+using test_3.Pages.BaseModels;
+using Yandex.Checkout.V3;
 
 namespace Rocky.Controllers
 {
@@ -32,6 +30,8 @@ namespace Rocky.Controllers
         private readonly IOrderDetailRepository _orserDetailRepos;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IEmailSender _emailSender;
+        private readonly IConfiguration _config;
+  
 
         [BindProperty]
         public ProductUserVM ProductUserVm { get; set; }
@@ -43,7 +43,8 @@ namespace Rocky.Controllers
             IInquiryDetailRepository inqDetailRepos,
             IInquiryHeaderRepository inqHederlRepos,
             IWebHostEnvironment webHostEnvironment, 
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IConfiguration config)
         {
             _proRepos = proRepos;
             _inqDetailRepos = inqDetailRepos;
@@ -53,6 +54,7 @@ namespace Rocky.Controllers
             _applicatUserRepos = applicatUserRepos;
             _webHostEnvironment = webHostEnvironment;
             _emailSender = emailSender;
+            _config = config;
         }
         public IActionResult Index()
         {
@@ -69,7 +71,7 @@ namespace Rocky.Controllers
 
             foreach (var obj in shoppingCartList)
             {
-                Product prodTemp = prodListTemp.FirstOrDefault(u => u.Id == obj.ProductId);
+                var prodTemp = prodListTemp.FirstOrDefault(u => u.Id == obj.ProductId);
                 prodTemp.TempSqFt = obj.SqFt;
                 prodList.Add(prodTemp);
             }
@@ -139,9 +141,30 @@ namespace Rocky.Controllers
 
             foreach (var cartObj in shoppingCartList)
             {
-                Product prodTemp = _proRepos.FirstOfDefault(u => u.Id  == cartObj.ProductId);
+                Product prodTemp = _proRepos.FirstOfDefault(u => u.Id == cartObj.ProductId);
                 prodTemp.TempSqFt = cartObj.SqFt;
                 ProductUserVm.ProductList.Add(prodTemp);
+            }
+
+            if (User.IsInRole(WC.AdminRole))
+            {
+                var client = new Client(NewPayYandex().ShopId, NewPayYandex().SecretKey);
+                var data = client.CreatePayment(
+                    new NewPayment
+                    {
+                        Amount = new Amount
+                        {
+                            Value = ProductUserVm.ProductList.Select(x => x.Price).Sum(),
+                            Currency = "RUB"
+                        },
+                        Confirmation = new Confirmation
+                        {
+                            Type = ConfirmationType.Embedded,
+                            Locale = "ru_RU"
+                        },
+                        Description = Guid.NewGuid().ToString()
+                    });
+                ViewBag.YandexPay = data.Confirmation.ConfirmationToken;
             }
 
             return View(ProductUserVm);
@@ -269,7 +292,7 @@ namespace Rocky.Controllers
         }
 
 
-        public IActionResult Remove(int id)
+        public IActionResult Remove(int? id)
         {
             List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
             if (HttpContext.Session.Get<IEnumerable<ShoppingCart>>(WC.SessionCart) != null &&
@@ -283,11 +306,19 @@ namespace Rocky.Controllers
             {
                 shoppingCartList.Remove(shoppingCatItem);
             }
+
             HttpContext.Session.Set(WC.SessionCart, shoppingCartList);
             TempData[WC.Success] = "Товар удален из корзины";
 
-
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove(WC.SessionCart);
+            TempData[WC.Success] = "Товары удалены из корзины";
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
@@ -301,6 +332,13 @@ namespace Rocky.Controllers
             }
             HttpContext.Session.Set(WC.SessionCart, shoppingCartsList);
             return RedirectToAction(nameof(Index));
+        }
+
+
+        // Возвращает настройки подключения Yandex кассы
+        private NewPaymentModel NewPayYandex()
+        {
+            return _config.GetSection("YandexPay").Get<NewPaymentModel>();
         }
 
     }

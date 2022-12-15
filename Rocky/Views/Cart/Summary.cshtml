@@ -127,6 +127,10 @@
                                             <li class="list-group-item d-flex justify-content-between">Total price : @($"{totalPrice:c}")</li>
                                         }
                                     </ul>
+                                    @if (User.IsInRole(WC.AdminRole))
+                                    {
+                                        <div id="payment-form"></div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -137,7 +141,7 @@
                         <div class="col-12 col-md-5 offset-md-7">
                             @if (User.IsInRole(WC.AdminRole))
                             {
-                                <button type="submit" id="submitButton" class="btn btn-success form-control">Submit order</button>
+                                <button type="submit" id="submitButton" class="disabled  form-control btn btn-secondary">Не оплачено</button>
                             }
                             else
                             {
@@ -155,4 +159,34 @@
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
+    <script>
+        const button = document.getElementById('submitButton');
+
+        //Инициализация виджета. 
+        const checkout = new window.YooMoneyCheckoutWidget({
+            confirmation_token: '@ViewBag.YandexPay',
+            
+
+            error_callback: function(error) {
+                console.log(error);
+            }
+        });
+        checkout.on('success', () => {
+            button.classList.remove("disabled");
+            button.classList.remove("btn-secondary");
+            button.classList.add("btn-success");
+            button.innerText = "Оплачено";
+            checkout.destroy();
+        });
+
+        checkout.on('fail', () => {
+            button.classList.remove("disabled");
+            button.classList.remove("btn-secondary");
+            button.classList.add("btn-danger");
+            button.innerText = "Ошибка платежа";
+            checkout.destroy();
+        });
+        checkout.render('payment-form');
+    </script>
 }
