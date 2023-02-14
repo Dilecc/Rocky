@@ -1,4 +1,8 @@
-﻿namespace Rocky_Utilitu
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+
+namespace Rocky_Utilitu
 {
     public static class WC
     {
@@ -27,6 +31,12 @@
         public const string StatusCancelled = "Cancelled";
         public const string StatusRefunded = "Refunded";
 
+        public static readonly IEnumerable<string> ListStatus = new ReadOnlyCollection<string>(
+            new List<string>
+            {
+                StatusPending, StatusApproved, StatusInProcess,
+                StatusShipped, StatusCancelled, StatusRefunded
+            });
 
     }
 }

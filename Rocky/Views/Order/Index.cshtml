@@ -1,0 +1,50 @@
+﻿@using Newtonsoft.Json
+@model Rocky_Models.OrderListVM
+
+<div class ="">
+    <table class="table table-striped dataTable table-hover" id="example">
+    </table>
+</div>
+
+@section Scripts
+{
+    <script>
+
+        $(document).ready(function() {
+            $('#example').DataTable({
+                data: @Html.Raw(JsonConvert.SerializeObject(Model.OrderHList)),
+                columns: [
+                    { data: 'Id', title: 'id', "width": "10%" },
+                    { data: 'FullName', title: 'name' },
+                    { data: 'Email', title: 'email' },
+                    { data: 'PhoneNumber', title: 'phone' },
+                    { data: 'OrderStatus', title: 'status' },
+                    {
+                        "data": "OrderDate",
+                        "render": function(data) {
+                            return new Date(data).toLocaleDateString();
+                        }
+                    },
+                    {
+                        "data": "Id",
+                        "render": function(data) {
+                            return `
+                            <div class="text-center">
+                                <a href="/Order/Detail/${data
+                                }" class="btn btn-primary text-white" style="cursor:pointer">
+                                    <i class="fa fa-list"></i> 
+                                </a>
+                            </div>
+                           `;
+                        },
+                        "width": "5%"
+                    }
+                ],
+                language: {
+                    "url":
+                        "https://cdn.datatables.net/plug-ins/1.13.1/i18n/ru.json"
+                }
+            });
+        })
+    </script>
+}
